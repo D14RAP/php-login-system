@@ -1,14 +1,21 @@
 <?php
     require_once("connect.php");
     if (isset($_POST["username"])) {
-        $username = mysql_escape_string($_POST["username"]);
-        $password = mysql_escape_string($_POST["password"]);
+        $username = mysql_real_escape_string($_POST["username"]);
+        $password = mysql_real_escape_string($_POST["password"]);
         $query = mysqli_query($connect, "SELECT * FROM `users` WHERE `username` = '" . $username . "';");
-        $user = mysqli_fetch_assoc($query);
-        if (password_verify($password, $user["password"])) {
-            session_start();
-            $_SESSION["username"] = $user["username"];
-            header("Location: index.php");
+        $rows = mysqli_num_rows($query);
+        if ($rows = 1) {
+            $user = mysqli_fetch_assoc($query);
+            if (password_verify($password, $user["password"])) {
+                session_start();
+                $_SESSION["username"] = $user["username"];
+                $query = mysqli_query($connect, "UPDATE * `users` SET `ip` = '" . $_SERVER['REMOTE_ADDR'] . "' WHERE `username` = '" . $user["username"] . "';");
+                header("Location: index.php");
+                exit();
+            }
+        } else {
+            header("Location: signin.php");
             exit();
         }
     }
@@ -23,34 +30,8 @@
         <link rel="stylesheet" href="assets/css/bootstrap.min.css">
     </head>
     <body>
-        <div id="signUpModal" class="modal fade" role="dialog">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Sign Up</h4>
-                    </div>
-                    <div class="modal-body">
-                        <form method="post" action="signup.php">
-                            <p>
-                                <input name="username" type="text" placeholder="Username" class="form-control">
-                            </p>
-                            <p>
-                                <input name="password" type="password" placeholder="Password" class="form-control">
-                            </p>
-                            <p>
-                                <button type="submit" class="btn btn-info btn-block">Sign Up</button>
-                            </p>
-                        </form>
-                    </div>
-                    <!--div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    </div-->
-                </div>
-            </div>
-        </div>
         <h1></h1>
-        <div class="container" style="max-width:640px;">
+        <div class="container" style="max-width:768px;">
             <div class="panel panel-primary">
                 <div class="panel-heading" style="text-align:center;">
                     <h1>PHP Login System</h1>
@@ -60,16 +41,11 @@
                         <p>
                             <input name="username" type="text" placeholder="Username" class="form-control">
                         </p>
-                        <p>
-                            <input name="password" type="password" placeholder="Password" class="form-control">
-                        </p>
-                        <p>
-                            <button type="submit" class="btn btn-success btn-block">Sign In</button>
-                        </p>
+                        <input name="password" type="password" placeholder="Password" class="form-control">
+                </div>
+                <div class="panel-footer">
+                    <button type="submit" class="btn btn-success btn-block">Sign In</button>
                     </form>
-                    <p>
-                        <a href="#" data-target="#signUpModal" data-toggle="modal" class="btn btn-info btn-block">Sign Up</a>
-                    </p>
                 </div>
             </div>
         </div>
